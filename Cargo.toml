@@ -1,0 +1,15 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dotenv = "0.15.0"
+futures = "0.3.30"
+mongodb = "3.1.0"
+rocket = { version = "0.5.1", features = ["json"] }
+rocket_cors = "0.6.0"
+rocket_dyn_templates = { version= "0.2.0", features =["tera"]}
+serde = "1.0.209"
+serde_json = "1.0.127"
+

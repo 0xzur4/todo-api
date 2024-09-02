@@ -1,0 +1,5 @@
+[debug]
+template_dir = "views"
+
+[release]
+template_dir = "views"
