@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[get("/")]
 pub fn index() -> Template {
     let mut context =HashMap::new();
-    context.insert("title", "Simple api");
+    context.insert("title", "Todo-list api");
     context.insert("message", "welcome to api");
 
     Template::render("index", &context)
