@@ -1,6 +1,6 @@
 
 use rocket::{delete, get, post, put, State};
-use mongodb::{bson::{doc, oid::ObjectId}, Database};
+use mongodb::{bson::doc, Database};
 use rocket::serde::{Deserialize, Serialize, json::Json};
 use futures::stream::StreamExt;
 use std::sync::Arc;
@@ -8,25 +8,23 @@ use std::sync::Arc;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Todo {
-    pub id: Option<String>,
     pub title: String,
     pub text: String,
 }
 
 // add data ke database
 #[post("/todo/add", data = "<todo>")]
-pub async fn add_todo(db: &State<Arc<Database>>, todo: Json<Todo>) -> String {
+pub async fn add_todo(db: &State<Arc<Database>>, todo: Json<Todo>) -> Json<String> {
     let collect = db.collection::<Todo>("todo");
 
     let new_todo = Todo {
-        id: todo.id.clone(),
         title: todo.title.clone(),
         text: todo.text.clone()
     };
 
     match collect.insert_one(new_todo).await {
-        Ok(_) => "List added".to_string(),
-        Err(_) => "Error added".to_string()
+        Ok(_) => Json("List added".to_string()),
+        Err(_) => Json("Error added".to_string())
     }
 }
 
@@ -53,19 +51,11 @@ pub async fn get_todo(db: &State<Arc<Database>>) -> Json<Vec<Todo>> {
 }
 
 // Edit data
-#[put("/todo/update", data= "<todo>")]
-pub async fn edit_data(db: &State<Arc<Database>>, todo: Json<Todo>) -> Result<Json<Todo>, String>{
+#[put("/todo/update/<title>", data= "<todo>")]
+pub async fn edit_data(db: &State<Arc<Database>>, todo: Json<Todo>, title: String) -> Result<Json<Todo>, Json<String>>{
     let collect = db.collection::<Todo>("todo");
-    let id = match &todo.id {
-        Some(id) => id,
-        None => return Err("Id is required".to_string()),
-    };
 
-    let object_id = match ObjectId::parse_str(id){
-        Ok(oid) => oid,
-        Err(_) => return Err("Error id format".to_string()),
-    };
-    let filter = doc! {"_id": object_id};
+    let filter = doc! {"title": title};
     let edit_data = doc! {
         "$set" : {
             "title" : &todo.title,
@@ -77,42 +67,33 @@ pub async fn edit_data(db: &State<Arc<Database>>, todo: Json<Todo>) -> Result<Js
         Ok(edit_result) => {
             if edit_result.matched_count == 1 {
                 Ok(Json(Todo {
-                    id: todo.id.clone(),
                     title: todo.title.clone(),
                     text: todo.text.clone()
                 }))
             }else {
-                Err("not found".to_string())
+                Err(Json("Not found".to_string()))
             }
         }
-        Err(_) => Err("Faildet to update data".to_string()),
+        Err(_) => Err(Json("Faildet to update data".to_string())),
     }
 }
 
 // delete data
-#[delete("/todo/delete", data = "<todo>")]
-pub async fn delete_data(db: &State<Arc<Database>>, todo: Json<Todo>) -> Result<String, String> {
+#[delete("/todo/delete/<title>")]
+pub async fn delete_data(db: &State<Arc<Database>>, title: String) -> Result<Json<String>, Json<String>> {
     let collect = db.collection::<Todo>("todo");
-
-    let id = match &todo.id {
-        Some(id) => id,
-        None => return Err("Id is required".to_string()),
-    };
-
-    let object_id = match ObjectId::parse_str(id) {
-        Ok(oid) => oid,
-        Err(_) => return Err("Error id format".to_string()),
-    };
-    let filter = doc! {"_id": object_id};
+    let filter = doc! {"title": title};
 
     match collect.delete_one(filter).await {
         Ok(del_result) => {
             if del_result.deleted_count == 1 {
-                Ok("Data succes deleted".to_string())
-            }else {
-                Err("not found".to_string())
+                Ok(Json("Data deleted".to_string()))
+            } else {
+                Err(Json("Not found".to_string()))
             }
         }
-        Err(_) => Err("Faildet to deleted data".to_string()),
+        Err(err) => Err(Json(err.to_string())),
     }
 }
+
+
