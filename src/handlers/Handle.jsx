@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+
 const Handle = () => {
     const [card, setCard] = useState(false);
     const [icon, setIcon] = useState(false);
@@ -11,6 +12,35 @@ const Handle = () => {
     const handleCard = () => {
         setCard(!card);
         setIcon(!icon);
+    };
+
+    const handleEdit = async (originalTitle, newTitle, newtext) => {
+        const updatedTodo = {
+            title: newTitle,
+            text: newtext,
+        };
+    
+    
+        try {
+            const response = await fetch(`http://localhost:8000/api/todo/update/${originalTitle}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedTodo),
+            });
+
+            if (response.ok) {
+                // Update data setelah berhasil mengedit
+                setData(prevData => prevData.map(item => 
+                    item.title === originalTitle ? { ...item, title: newTitle, text: newtext } : item
+                ));
+            } else {
+                console.error('Failed to update item');
+            }
+        } catch (error) {
+            console.error('Error occurred while updating item:', error);
+        }
     };
 
     const handleDelete = async (title) => {
@@ -33,7 +63,7 @@ const Handle = () => {
                 setData(updatedData);
             } else {
                 const errorMessage = await response.text();
-                console.error('Failed to delete item:', errorMessage);
+                console.error('Failed delete item:', errorMessage);
             }
         } catch (error) {
             console.error('Error occurred while deleting item:', error);
@@ -87,6 +117,7 @@ const Handle = () => {
         text,
         data,
         selectedIds,
+        handleEdit,
         handleCard,
         handleSubmit,
         handleDelete,

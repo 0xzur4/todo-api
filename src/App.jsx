@@ -3,6 +3,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Handle from './handlers/Handle';
 import './App.css';
+import EditHandle from './components/EditHandle';
 
 function App() {
   const {
@@ -13,6 +14,7 @@ function App() {
     data,
     selectedIds,
     handleDelete,
+    handleEdit,
     handleCard,
     handleSubmit,
     setTitle,
@@ -59,41 +61,13 @@ function App() {
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '10px', 
+        gap: '10px',
         marginTop: '20px',
-        justifyContent: 'flex-start', 
+        justifyContent: 'flex-start',
       }}>
+
         {data.map((datas, index) => (
-          <div
-            key={index}
-            onDoubleClick={() => handleDoubleClick(index)}
-            style={{
-              width: '200px', 
-              height: 'auto', 
-              padding: '10px',
-              border: 'solid 1px',
-              display: 'flex',
-              flexDirection: 'column',
-              backgroundColor: selectedIds.includes(index) ? 'green' : '#242424'
-            }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', borderBottom: 'solid 1.5px' }}>
-              <h3>{datas.title}</h3>
-              <div style={{ display: 'flex', gap: '5px', marginLeft: 'auto' }}>
-                <img src='/edit.png' style={{ height: '20px', width: '20px', cursor: 'pointer' }} />
-                <img src='/delete.png' style={{ height: '20px', width: '20px', cursor: 'pointer' }} onClick={() => handleDelete(datas.title)} />
-              </div>
-            </div>
-            <p
-              style={{
-                width: '100%',
-                wordWrap: 'break-word',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'normal'
-              }}
-              dangerouslySetInnerHTML={{ __html: datas.text }}>
-            </p>
-          </div>
+          <EditHandle datas={datas} handleDelete={handleDelete} doubleClick={handleDoubleClick} selectedIds={selectedIds} handleEdit={handleEdit} index={index} />
         ))}
       </div>
     </div>
